@@ -7,6 +7,7 @@
 # =============================================================
 
 import sqlite3                  # Built-in Python module for SQLite
+import os
 from flask import (
     Flask,
     render_template,            # Renders a Jinja2 HTML template
@@ -31,7 +32,37 @@ app.secret_key = "change-me-in-production"
 
 # Path to our SQLite database file. SQLite wil  l create this file
 # automatically the first time we connect.
-DATABASE = "climate.db"
+# Use an ephemeral writable path on serverless platforms (Vercel, AWS Lambda).
+# Locally use `climate.db` or override with the `DATABASE_PATH` env var.
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    DATABASE = "/tmp/climate.db"
+else:
+    DATABASE = os.environ.get("DATABASE_PATH", "climate.db")
+
+
+def ensure_schema():
+    """
+    Create the SQLite database file and run `schema.sql` if the DB doesn't exist yet.
+    This is safe to call at import time for serverless environments where `/tmp`
+    is writable but the project directory is read-only.
+    """
+    try:
+        if not os.path.exists(DATABASE):
+            # Ensure parent directory exists (usually not needed for /tmp)
+            parent = os.path.dirname(DATABASE)
+            if parent and not os.path.exists(parent):
+                os.makedirs(parent, exist_ok=True)
+            conn = sqlite3.connect(DATABASE)
+            with conn:
+                with open("schema.sql", "r") as f:
+                    conn.executescript(f.read())
+            conn.close()
+    except Exception:
+        # If schema setup fails, allow the original init_db() to raise a clearer error
+        pass
+
+# Ensure the DB + schema exist right away (useful on serverless platforms).
+ensure_schema()
 
 
 # =============================================================
