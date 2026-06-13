@@ -1,4 +1,4 @@
-# Climate Tracker
+# climate-tracker
 
 Simple Flask app to record and visualise temperature readings by city.
 
