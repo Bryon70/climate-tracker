@@ -29,7 +29,7 @@ app = Flask(__name__)
 # in production — never hard-code secrets in real projects!
 app.secret_key = "change-me-in-production"
 
-# Path to our SQLite database file. SQLite will create this file
+# Path to our SQLite database file. SQLite wil  l create this file
 # automatically the first time we connect.
 DATABASE = "climate.db"
 
