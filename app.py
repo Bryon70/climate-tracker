@@ -30,14 +30,18 @@ app = Flask(__name__)
 # in production — never hard-code secrets in real projects!
 app.secret_key = "change-me-in-production"
 
-# Path to our SQLite database file. SQLite wil  l create this file
+# Path to our SQLite database file. SQLite will create this file
 # automatically the first time we connect.
 # Use an ephemeral writable path on serverless platforms (Vercel, AWS Lambda).
 # Locally use `climate.db` or override with the `DATABASE_PATH` env var.
-if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
-    DATABASE = "/tmp/climate.db"
-else:
-    DATABASE = os.environ.get("DATABASE_PATH", "climate.db")
+
+# Vercel's filesystem is read-only except for /tmp.
+DATABASE = "/tmp/climate.db" if os.environ.get("VERCEL") else os.environ.get(
+    "DATABASE_PATH", "climate.db"
+)
+
+print("DATABASE =", DATABASE)
+print("VERCEL =", os.environ.get("VERCEL"))
 
 
 def ensure_schema():
@@ -52,14 +56,26 @@ def ensure_schema():
             parent = os.path.dirname(DATABASE)
             if parent and not os.path.exists(parent):
                 os.makedirs(parent, exist_ok=True)
+
             conn = sqlite3.connect(DATABASE)
+
+            # Find schema.sql relative to this file rather than the
+            # current working directory.
+            schema_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "schema.sql"
+            )
+
             with conn:
-                with open("schema.sql", "r") as f:
+                with open(schema_path, "r", encoding="utf-8") as f:
                     conn.executescript(f.read())
+
             conn.close()
-    except Exception:
-        # If schema setup fails, allow the original init_db() to raise a clearer error
-        pass
+
+    except Exception as e:
+        print("SCHEMA ERROR:", e)
+        raise
+
 
 # Ensure the DB + schema exist right away (useful on serverless platforms).
 ensure_schema()
@@ -93,8 +109,13 @@ def init_db():
     open() reads the SQL file as a string, then executescript()
     runs all the statements in one go. Called once at startup.
     """
+    schema_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "schema.sql"
+    )
+
     with get_db() as conn:
-        with open("schema.sql", "r") as f:
+        with open(schema_path, "r", encoding="utf-8") as f:
             conn.executescript(f.read())
 
 
@@ -188,6 +209,17 @@ def submit():
     # so renaming the route won't break this line.
     return redirect(url_for("index"))
 
+
+# =============================================================
+# Temporary debug route
+@app.route("/debug")
+def debug():
+    return {
+        "database": DATABASE,
+        "exists": os.path.exists(DATABASE),
+        "vercel": os.environ.get("VERCEL"),
+        "cwd": os.getcwd(),
+    }
 
 # =============================================================
 # Entry point
