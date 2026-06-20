@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings</title>
+ <style>
+    /* =========================================================
+       CSS Custom Properties (variables) — define once, use
+       everywhere. Change --accent here and the whole page updates.
+       ========================================================= */
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --accent:   #38bdf8;     /* sky blue — our brand colour */
+      --success:  #3fb950;
+      --error:    #f85149;
+      --radius:   10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+
+    /* ---- Flash messages ---- */
+    .flash-list { list-style: none; margin-bottom: 1.5rem; }
+    .flash-list li {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      border-left: 4px solid;
+    }
+    .flash-list .success { border-color: var(--success); background: #1a2e1a; }
+    .flash-list .error   { border-color: var(--error);   background: #2e1a1a; }
+
+    /* ---- Card component ---- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .card h2 { font-size: 1.1rem; margin-bottom: 1.25rem; color: var(--accent); }
+
+    /* ---- Form ---- */
+    .form-grid {
+      display: grid;
+      /* auto-fill columns that are at least 180px wide */
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .field input {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .btn {
+      align-self: end;
+      padding: 0.65rem 1.4rem;
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    /* ---- Chart canvas ---- */
+    .chart-wrap { position: relative; height: 280px; }
+
+    /* ---- Readings table ---- */
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .temp-badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .temp-hot  { background: #2e1a1a; color: #f85149; }
+    .temp-warm { background: #2e2a1a; color: #e3b341; }
+    .temp-cool { background: #1a1e2e; color: var(--accent); }
+    .empty-state { text-align: center; padding: 2rem; color: var(--muted); }
+    /* ==============================
+   ROBLOX STYLE SIDEBAR
+   ============================== */
+
+.menu-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface);
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 260px;
+  height: 100vh;
+  background: #11151c;
+  border-right: 1px solid var(--border);
+  transition: left 0.3s ease;
+  z-index: 1500;
+  overflow-y: auto;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 25px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h2 {
+  color: white;
+  margin: 0;
+}
+
+.sidebar a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 16px 25px;
+  font-size: 17px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.sidebar a:hover {
+  background: rgba(255,255,255,0.08);
+  padding-left: 32px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 1400;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-top: 60px;
+}
+  </style>
+</head>
+<body>
