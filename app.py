@@ -151,6 +151,10 @@ def index():
     return render_template("index.html", readings=readings)
 
 
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
+
 @app.route("/submit", methods=["POST"])
 def submit():
     """
