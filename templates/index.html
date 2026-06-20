@@ -139,9 +139,108 @@
     .temp-warm { background: #2e2a1a; color: #e3b341; }
     .temp-cool { background: #1a1e2e; color: var(--accent); }
     .empty-state { text-align: center; padding: 2rem; color: var(--muted); }
+    /* ==============================
+   ROBLOX STYLE SIDEBAR
+   ============================== */
+
+.menu-btn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface);
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 2000;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 260px;
+  height: 100vh;
+  background: #11151c;
+  border-right: 1px solid var(--border);
+  transition: left 0.3s ease;
+  z-index: 1500;
+  overflow-y: auto;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 25px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header h2 {
+  color: white;
+  margin: 0;
+}
+
+.sidebar a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 16px 25px;
+  font-size: 17px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.sidebar a:hover {
+  background: rgba(255,255,255,0.08);
+  padding-left: 32px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 1400;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-top: 60px;
+}
   </style>
 </head>
 <body>
+
+<button id="menuBtn" class="menu-btn">☰</button>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h2>🌡️ Climate Tracker</h2>
+  </div>
+
+  <a href="/">🏠 Home</a>
+  <a href="#submit-form">➕ Add Reading</a>
+  <a href="#chart-section">📈 Charts</a>
+  <a href="#readings-section">📋 Readings</a>
+  <a href="#">🌍 Climate Data</a>
+  <a href="#">⚙️ Settings</a>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
 <div class="container">
 
   <h1>🌡️ Climate Temperature Tracker</h1>
@@ -164,7 +263,7 @@
        All <input> elements must have a name="" attribute; that name
        becomes the key in Flask's request.form dictionary.
        =========================================================== -->
-  <div class="card">
+  <div class="card" id="submit-form">
     <h2>➕ Add New Reading</h2>
     <form action="/submit" method="post">
       <div class="form-grid">
@@ -214,7 +313,7 @@
        tojson is a Jinja2 filter that safely serialises a Python
        value to a JSON string, including proper escaping.
        =========================================================== -->
-  <div class="card">
+  <div class="card" id="chart-section">
     <h2>📈 Temperature Over Time</h2>
 
     {% if readings %}
@@ -287,7 +386,7 @@
        row["city"] accesses a column by name because we set
        conn.row_factory = sqlite3.Row in app.py.
        =========================================================== -->
-  <div class="card">
+  <div class="card" id="readings-section">
     <h2>📋 All Readings</h2>
 
     {% if readings %}
@@ -330,5 +429,18 @@
   </div>
 
 </div><!-- /.container -->
+<script>
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+function toggleMenu() {
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+menuBtn.addEventListener("click", toggleMenu);
+overlay.addEventListener("click", toggleMenu);
+</script>
 </body>
 </html>
